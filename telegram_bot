@@ -1,0 +1,50 @@
+import telebot
+import requests
+
+
+
+API_TOKEN = "6882479295:AAHDz74613NBDTFOnusy4YE83SYaajp1kVw";
+API_KEY = "454c8d93e13853bd95ff4761d31e4278";
+
+bot = telebot.TeleBot(API_TOKEN)
+
+
+@bot.message_handler(commands=['Greet', 'greet'])
+def greet(message):
+    bot.reply_to(message, "Hey! How's it going?")
+
+
+@bot.message_handler(commands=['hello'])
+def hello(message):
+    bot.send_message(message.chat.id, "Hello!")
+
+
+@bot.message_handler(commands=['weather'])
+
+def get_weather_info(message):
+    try:
+        city = message.text.split('/weather ', 2)[1]
+        response = requests.get(f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric")
+
+        weather_data = response.json()
+
+        title = weather_data['name']
+
+        weathers = weather_data['weather']
+
+        for weather in weathers: 
+                description = weather['description']
+
+        feels_like = weather_data['main']['feels_like']
+        
+        temperature = weather_data['main']['temp']
+
+        response = f"*City:* {title}\n*Temperature:* {temperature} °c\n*Description:* {description}\n*Feels like:* {feels_like} °c"
+    except IndexError:
+        response = "Please provide a city name after the command, like this: /weather Phnom Penh"
+    
+
+
+        # Send response message with Markdown formatting
+    bot.send_message(message.chat.id, response, parse_mode="Markdown")
+bot.polling()
